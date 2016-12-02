@@ -1,6 +1,6 @@
 class Response < ActiveRecord::Base
   validates :response, :user_id, presence: true
-  validate :not_duplicate_response
+  validate :not_duplicate_response, :author_cannot_respond_to_self_post
 
   belongs_to :answer_choices,
     primary_key: :id,
@@ -18,7 +18,11 @@ class Response < ActiveRecord::Base
 
   def author_cannot_respond_to_self_post
     # self_ac = AnswerChoice.where(id: self.answer_choice_id)
-    # Question.where(id: self_ac)
+    # question = Question.where(id: self_ac.question_id)
+    # poll = Poll.where(id: question.poll_id)
+    if question.poll.author_id == self.user_id
+      errors[:respondent] << "cannot be the author"
+    end
   end
 
   def not_duplicate_response
